@@ -1,29 +1,34 @@
+import { middleware } from "../../../lib/middleware";
 import prisma from "../../../lib/prisma";
 
-const handler = async (req,res) => {
 
-    if(req.method === 'POST'){
 
-        const { comment , forumId , personId } = req.body; 
+export default middleware(
+   async function (req,res) {
 
-        if( !comment ||  !forumId ||  !personId ){
-            return res.status(404).json({message: ' comment wajib diisi  '})
-        }
+        if(req.method === 'POST'){
+    
+            const personId = req.Person.personId;
 
-        const addComment = await prisma.Comment.create({
-             data : {
-                comment: comment,
-                forumId: forumId,
-                personId : personId
+            const { comment , forumId  } = req.body; 
+    
+            if( !comment ||  !forumId ||  !personId ){
+                return res.status(404).json({message: ' comment wajib diisi  '})
             }
-        })
-
-        return res.status(200).json({message: 'comment berhasil ditambahkan '})
-    }else{
-        return res.status(404).json({ message: 'permintaan anda tidak diizinkan' })
+    
+            const addComment = await prisma.Comment.create({
+                 data : {
+                    comment: comment,
+                    forumId: forumId,
+                    personId : personId
+                }
+            })
+    
+            return res.status(200).json({message: 'comment berhasil ditambahkan '})
+        }else{
+            return res.status(404).json({ message: 'permintaan anda tidak diizinkan' })
+        }
     }
-}
-
-export default handler; 
+) 
 
 

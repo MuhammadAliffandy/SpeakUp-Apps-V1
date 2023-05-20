@@ -17,6 +17,9 @@ const handler = async (req,res) => {
         return res.status(200).json(allForum);
     
     }
+    else{ 
+        return res.status(404).json({ message: 'permintaan anda tidak diizinkan' })
+    }
 }
 
 export default handler;

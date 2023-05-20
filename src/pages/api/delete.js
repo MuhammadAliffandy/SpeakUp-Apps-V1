@@ -20,6 +20,12 @@ const handler = async(req,res) => {
           })
         }
 
+        const deleteComment = await prisma.like.deleteMany({
+          where: {
+            forumId: id,
+          },
+        })
+
         const deleteSpeak = await prisma.Forum.delete({
             where: {
               id: id,

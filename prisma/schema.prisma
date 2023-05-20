@@ -21,8 +21,7 @@ model Person {
     updatedAt   DateTime    @updatedAt 
     forum       Forum[]     @relation("forumList")
     comment     Comment[]   @relation("personList")
-
-
+    like        Like[]      @relation("idlike")
 } 
 
 model Forum {
@@ -30,11 +29,12 @@ model Forum {
     title       String     
     speak       String
     createdAt   DateTime    @default(now())
-    updatedAt   DateTime    @updatedAt      
+    updatedAt   DateTime    @updatedAt
+    countLike   Int
     person      Person? @relation("forumList",fields: [personId], references: [id])
     personId    Int
     comment     Comment[]   @relation("commentList")
-
+    like        Like[]      @relation("likeList")
 } 
 
 model Comment {
@@ -46,3 +46,13 @@ model Comment {
     forumId     Int
     personId    Int
 } 
+
+model Like {
+    id          Int         @id @default(autoincrement())
+    condition   Boolean
+    forum       Forum? @relation("likeList",fields: [forumId], references: [id])
+    forumId     Int
+    person      Person? @relation("idlike",fields: [personId], references: [id])
+    personId    Int
+   
+}

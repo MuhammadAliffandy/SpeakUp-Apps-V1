@@ -1,4 +1,5 @@
 import React ,{ useState , useEffect, } from 'react';
+import moment from 'moment/moment';
 import CardSpeak from './CardSpeak';
 import CommentWrap from './CommentSpeak';
 
@@ -6,20 +7,23 @@ import CommentWrap from './CommentSpeak';
 const SpeakArea = () => {
 
     const [  allSpeak, setSpeak  ] = useState([]);
-    const [  person, setPerson  ] = useState();
+    const [  sessionPersonId, setSessionPersonId  ] = useState('');
   
     useEffect(()=>{
+
+        //  forum get 
+
         fetch("http://localhost:3000/api/forum")
         .then( response => {
             return response.json(); 
         } )
         .then( data => {
             setSpeak(data.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
-            
         });
         
         var userID = sessionStorage.getItem('userID');
-            
+        setSessionPersonId(userID)
+        
         const buttons = document.querySelectorAll(`.edit${userID}`);
         buttons.forEach(button => {
             button.setAttribute('disabled', false);
@@ -30,26 +34,15 @@ const SpeakArea = () => {
         buttond.forEach(button => {
             button.setAttribute('disabled', false);
             button.style.visibility = 'visible'
-           
         });
-
-    
-        const options = {
-            method: 'GET',
-            headers: new Headers({
-                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-              })
-        }
-
-        fetch("http://localhost:3000/api/person",options)
-        .then( response => {
-        return response.json(); 
-        } )
-        .then( data => {
-            setPerson( data.person.id );
-
-        });
-
+        
+        // like get
+        
+        allSpeak.map((data)=>{
+            likeCondition(data.id, `like${data.id}` ,userID)
+            document.getElementById(`forumGet${data.id}`).innerHTML
+        })
+        
 
     });
 
@@ -69,7 +62,7 @@ const SpeakArea = () => {
           options)
           .then(response => {
             if (response.ok) {
-
+                
             cancelEdit( `forumGet${speak.id}`,`buttonGet${speak.id}`,`forumEdit${speak.id}`,`buttonEdit${speak.id}`,`comButtonWrap${speak.id}` )
 
               return response.json();
@@ -102,6 +95,8 @@ const SpeakArea = () => {
     
         const response = await fetch("http://localhost:3000/api/delete", options);
         const responseJson = await response.json();
+
+        location.reload();
     }
 
     const editSpeak = (forumGet , buttonGet , forumEdit , buttonEdit ,comButton) => {
@@ -112,12 +107,14 @@ const SpeakArea = () => {
         var ButtonEdit= document.getElementById(buttonEdit)
         var CommentButton= document.getElementById(comButton)
 
-        if ( ForumGet.style.display = 'flex' ) {
+        if ( ForumGet.style.display = 'none' ) {
             ForumGet.style.display = 'none'
             ButtonGet.style.display = 'none'
             CommentButton.style.display = 'none'
+        
         }
         
+        ButtonGet.style.visibility = 'hidden'
         ForumEdit.style.display = 'flex'
         ButtonEdit.style.display = 'flex'
 
@@ -173,9 +170,10 @@ const SpeakArea = () => {
     const commentConsume = async(com) => {
         const options = {
             method: 'POST',
-            headers: {
+            headers: new Headers({
+                "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
                 'Content-Type': 'application/json',
-              },
+              }),
             body: JSON.stringify(com)
           };
       
@@ -193,40 +191,137 @@ const SpeakArea = () => {
           })
     }
 
-    const sendConsume = (idCom ,f , p) => {
+    const sendConsume = (idCom ,f ) => {
 
         const comText = document.getElementById(idCom)
 
         const com = {
             comment : comText.value,
             forumId : f,
-            personId : p
         }
 
         commentConsume(com);
         comText.value = '';
     }
 
-    // show all action button 
+    // action button like
 
-    const allButton = ( wrapButton ) => {
-        var WrapButton = document.getElementById(wrapButton)     
+    const likeConsume = async(like) => {
+        const options = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+              },
+            body: JSON.stringify(like)
+          };
+      
+          await fetch("http://localhost:3000/api/like", 
+          options)
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error('Invalid like');
+            }
+          })
+          .then(data => {
+            return data ;
+          })
+    }
 
-        if ( WrapButton.style.display == 'flex' ) {
-            WrapButton.style.display = ''
-        }else{
-            WrapButton.style.display = 'flex'
+    const sendLike = async(forum , count  , likeId) => {
+
+        const liked = document.getElementById(likeId);
+
+        if(liked.style.color == 'green' ){
+            const likeCounter = {
+                id : forum,
+                person : parseInt(sessionPersonId),
+                like : count - 1 ,
+                condition : false,
+            }
+            await likeConsume(likeCounter);
+            liked.style.color = 'white'
+         }else{
+             const likeCounter = {
+                id : forum,
+                person : parseInt(sessionPersonId),
+                like : count + 1,
+                condition : true,
+            }
+            await likeConsume(likeCounter);
+            liked.style.color = 'green'
         }
+    }
+
+    const likeCondition = async (dataId , likeId , personId) => {
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+              },
+            body: JSON.stringify({ 
+                id : dataId,
+                person : parseInt(personId)
+             })
+          };
+      
+        await fetch("http://localhost:3000/api/like", 
+          options)
+          .then(response => {
+         
+            return response.json();
+        
+          })
+          .then(data => {
+            const liked = document.getElementById(likeId);
+
+            if( data[0].condition == false ){
+                liked.style.color = 'white'
+            }else {
+                liked.style.color = 'green'
+            }
+            
+          })
+    }
+
+    // action input 
+
+    const customSearch = () => {
+        const searchSpeak = document.getElementById('searchSpeak').value.toLowerCase();
+        allSpeak.map((data)=>{
+            const listForum = document.getElementById(`forumGet${data.id}`);   
+            if( listForum.innerText.toLowerCase().indexOf(searchSpeak) >= 0 ){
+                listForum.style.display = '';   
+            }else{
+                listForum.style.display = 'none';
+            }
+        })    
     }
 
     return(
         <section className='flex items-center justify-center h-[100vh] ' >
-            <div  className='w-[900px] h-[90vh] flex flex-col items-center justify-center  '>
+        
+            {/* judul */}
+
+            <div  className='w-[900px] h-[90vh] flex flex-col items-center justify-center'>
                 <h1 id='speakupForum' className='text-white font-bold text-4xl mb-5' >SpeakUp Forum</h1>
                 <p className='text-white font-semibold text-md mb-5'  >Suarakan keluh kesah hatimu sebelum merusak raga jiwamu</p>
-                <div className='  flex flex-col gap-[10px] items-center w-[880px] h-[87vh] p-10 overflow-y-scroll overflow-x-hidden scrollbar scrollbar-w-1 scrollbar-track-transparent '>
+
+                {/* custom search */}
+                <div className='flex gap-[8px] my-5'>
+                    <input id='searchSpeak' onChange={customSearch}   className=' p-2 w-[680px] rounded-[12px] ' placeholder='Cari speak...' type='text'></input>
+                    <button  onClick={customSearch} className='p-2 w-[40px] h-[40px] bg-green-700 rounded-[10px]'><i className="fa-solid fa-magnifying-glass text-white "></i></button>
+                </div>
+                {/* card */}
+                <div className=' my-2 flex flex-col gap-[10px] items-end w-[880px] h-[87vh] p-5 overflow-y-scroll overflow-x-hidden scrollbar scrollbar-w-1 scrollbar-track-transparent '>
                     {
-                        allSpeak.map((data)=>{
+                        allSpeak.map((data)=> {
+
+                            const tanggal = data.updatedAt ; 
+                            const displayTanggal = moment(tanggal).format('DD MMMM YYYY');
+                          
+
                             return(
                                 <CardSpeak
                                     //argument speak card 
@@ -236,6 +331,10 @@ const SpeakArea = () => {
                                     avatar={data.person.avatar}
                                     title={data.title} 
                                     speak={data.speak}
+                                    creatDate={displayTanggal}
+                                    commentCount={data.comment.length}
+                                    likeCount={data.countLike}
+                                    likeId={`like${data.id}`}
 
                                     // inisiasi per id card
                                     forumGet={`forumGet${data.id}`}
@@ -275,17 +374,10 @@ const SpeakArea = () => {
                                     }}
 
                                     sendComment={()=>{
-                                        sendConsume( `comment${data.id}`, data.id , person )
-                                    }}
-
-                                    // show all button 
-                                    allButtonWrap={`wrapbutton${data.id}`}
-                                    showAllButton={()=>{
-                                        allButton(`wrapbutton${data.id}`)
+                                        sendConsume( `comment${data.id}`, data.id )
                                     }}
 
                                     // comment area
-
                                     comWrapId={`comWrap${data.id}`}
 
                                     allComm={
@@ -299,6 +391,11 @@ const SpeakArea = () => {
                                             )
                                         })
                                     }
+
+                                    // like area
+                                    likeAction={()=>{
+                                        sendLike( data.id ,data.countLike,`like${data.id}` )
+                                    }}
 
                                     />
                             )

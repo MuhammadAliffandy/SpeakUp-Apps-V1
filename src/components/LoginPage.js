@@ -11,6 +11,32 @@ const LoginPage = () => {
     const [ visibility , setVisibility ] = useState('hidden')
     const [ vislogin , setVisLogin ] = useState('visible')
 
+
+    const userChecked = async (token) => {
+      const options = {
+        method: 'GET',
+        headers: new Headers({
+            "Authorization": `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }),
+        
+      };
+  
+     await fetch("http://localhost:3000/api/person", 
+      options)
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Invalid comment');
+        }
+      })
+      .then(data => {
+        sessionStorage.setItem('userID',data.person.id);
+        return data ;
+      })
+    }
+
   
     const signUpButton = () => {
       setHeightTitle('70px')
@@ -93,6 +119,7 @@ const LoginPage = () => {
         })
         .then(data => {
           sessionStorage.setItem("token", data.token)
+          userChecked(data.token)
         })
         .catch(error => {
             if(error){

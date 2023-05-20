@@ -1,4 +1,5 @@
 
+import comment from '@/pages/api/comment';
 import React ,{ useState , useEffect, } from 'react';
 
 
@@ -6,8 +7,6 @@ import React ,{ useState , useEffect, } from 'react';
 const CardSpeak = ({
 
     allComm,
-    showAllButton,
-    allButtonWrap,
     comWrapId,
     // argument comment button
 
@@ -36,6 +35,11 @@ const CardSpeak = ({
     name  , 
     title , 
     speak , 
+    creatDate,
+    likeId,
+    commentCount,
+    likeCount,
+    likeAction,
     deleteAction , 
     editAction , 
     editDone , 
@@ -43,66 +47,53 @@ const CardSpeak = ({
 
     return(
         <div className='flex flex-col'>
-             <div key= {keyCard} className='flex w-[780px] h-max '>
+             <div key={keyCard} className='flex w-[780px] h-max '>
                 
                 {/* forum area */}
                 
                 <div id={forumGet} className='rounded-[10px] bg-white bg-opacity-10 w-[680px] h-max p-5 m-2 flex flex-col'>
                     <div className='flex justify-between'>
+
+                    {/* col avatar with date */}
+
                         <div className='flex items-center gap-[8px] pb-2'>
                             <img  src={avatar} className='w-[18px] h-[18px] bg-orange-300 rounded-[100px]'/>
                             <p className='text-[14px]  text-gray-500'>{name}</p>
                         </div>
-                        <div><button onClick={showAllButton} ><i  className='fa-solid fa-ellipsis text-white'></i></button></div>
+                        <div><p className='text-white text-[12px]' >{creatDate}</p></div>
                     </div>
+
+                    {/* forum */}
+
                     <h2 className='text-white text-2xl font-bold'>{title}</h2>
                     <div className='text-white t px-2 py-1 bg-green-300 bg-opacity-20 rounded-[10px] border-gray-200 overflow-y-scroll overflow-x-hidden scrollbar scrollbar-w-1 scrollbar-track-transparent scrollbar-thumb-green-200 scrollbar-thumb-rounded-[20px]  break-words w-[650px] h-max mt-[10px]'>
                         <p className='w-[600px] text-sm '>{speak}</p>
                     </div>
+
+                    {/* button */}
+
+                    <div className='flex text-[12px] text-white gap-[20px] mt-3 '>
+                        <div id={buttonComHis} className='flex m-2 gap-[40px]'>
+                            <button className= {  commentAllow }  onClick={ commentAction }  ><p className=' cursor-pointer'>Comment    {commentCount}</p>
+                            </button>
+                            <button id= {  likeId }  onClick={ likeAction }  className='flex items-center gap-[6px]'><i className='fa-solid fa-thumbs-up  cursor-pointer' ></i><p>{likeCount}</p>
+                            </button>
+                        </div>
+                        <div  id={buttonGet} className='flex  m-2 gap-[40px]'>
+                            <button className= { buttonEditAllow } style={{
+                                visibility : 'hidden'
+                            }} onClick={editAction}><p className=' cursor-pointer'>Edit</p>
+                            </button>
+                            <button  className={ buttonDeleteAllow } style={{
+                                visibility : 'hidden'
+                            }} onClick={deleteAction}><p className=' cursor-pointer'>Hapus</p>
+                            </button>
+                            
+                        </div>
+                    </div>
                 </div>
 
                 {/* early button */}
-
-                <div id={allButtonWrap} className='hidden '> 
-
-                    {/* button comment   */}
-
-                    <div id={buttonComHis} className='flex flex-col m-2 gap-[10px]'>
-                        <button className= {  commentAllow } style={{
-                            backgroundColor: 'white',
-                            width : '2.5rem',
-                            height : '2.5rem',
-                            borderRadius: '6px',
-                        }} onClick={ commentAction }  ><i className="fa-solid fa-comment text-yellow-300" ></i>
-                        </button>
-                        <button className= {  commentAllow } style={{
-                            backgroundColor: 'white',
-                            width : '2.5rem',
-                            height : '2.5rem',
-                            borderRadius: '6px',
-                        }} onClick={ commentAction }  ><i className="fa-solid fa-history text-yellow-300" ></i>
-                        </button>
-                    </div>
-
-                    <div  id={buttonGet} className='flex flex-col m-2 gap-[10px]'>
-                        <button  className={ buttonDeleteAllow } style={{
-                            backgroundColor: 'rgb(239 68 68 / var(--tw-bg-opacity))',
-                            width : '2.5rem',
-                            height : '2.5rem',
-                            borderRadius: '6px',
-                            visibility : 'hidden'
-                        }} onClick={deleteAction}><i className="fa-solid fa-trash-can text-white"></i>
-                        </button>
-                        <button className= { buttonEditAllow } style={{
-                            backgroundColor: 'white',
-                            width : '2.5rem',
-                            height : '2.5rem',
-                            borderRadius: '6px',
-                            visibility : 'hidden'
-                        }} onClick={editAction}><i className="fa-solid fa-pen-to-square text-green-600" ></i>
-                        </button>
-                    </div>
-                </div>
 
                 {/* change to edit data */}
 
