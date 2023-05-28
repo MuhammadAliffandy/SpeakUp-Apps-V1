@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+    id          Int         @id @default(autoincrement())  
+    nickname    String
+    avatar      String
+    username    String
+    email       String      @unique
+    password    String
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt 
+    forum       Forum[]     @relation("forumList")
+    comment     Comment[]   @relation("personList")
+    like        Like[]      @relation("idlike")
+} 
+
+model Forum {
+    id          Int         @id @default(autoincrement())
+    title       String     
+    speak       String
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    countLike   Int
+    person      Person? @relation("forumList",fields: [personId], references: [id])
+    personId    Int
+    comment     Comment[]   @relation("commentList")
+    like        Like[]      @relation("likeList")
+} 
+
+model Comment {
+    id          Int         @id @default(autoincrement())
+    comment     String
+    createdAt   DateTime    @default(now())     
+    forum       Forum? @relation("commentList",fields: [forumId], references: [id])
+    person      Person? @relation("personList",fields: [personId], references: [id])
+    forumId     Int
+    personId    Int
+} 
+
+model Like {
+    id          Int         @id @default(autoincrement())
+    condition   Boolean
+    forum       Forum? @relation("likeList",fields: [forumId], references: [id])
+    forumId     Int
+    person      Person? @relation("idlike",fields: [personId], references: [id])
+    personId    Int
+   
+}

@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#circleWarm{
+    background: radial-gradient(45.3% 45.3% at 50% 50%, rgba(8, 137, 44, 0.3476) 1.87%, rgba(39, 199, 84, 0) 97.71%);
+}
+
+#landingpage, #loginpage{
+    background: url('./../assets/images/bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    background-color: black;
+
+}
+
+#bgProfil{
+    background: url('./../assets/images/bgprofil.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
